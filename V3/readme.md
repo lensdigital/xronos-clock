@@ -10,3 +10,6 @@ What's new in V3 firmware:
 - Button logic was rewritten, holding INCR button for 2 seconds will activate accelerated incrementation in settings of the time, alarm, etc.
 To use code for Xronos 2.1 clocks, just uncomment "#define XRONOS2" from main file as well as HT1632.h and WavePinDefs.h (part of modified WaveHC library)
 You must initialize EEPROM to write all Timezone rules to it. Do it by either uncommenting initEEPROM() in setup function or thru the menu.
+
+NOTICE: To compile code you need Arduino IDE 1.6.10 or higher. It won't work in previous versions.
+To upload firmware hex file directly, you will need AVRDUDE version 6.3!
