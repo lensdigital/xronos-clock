@@ -1,7 +1,7 @@
 /* Xronos Clock V3 definitions and vars */
 
 //#define RFM69_CHIP // Comment out for RFM12b
-//#define XRONOS2 // Comment out for Xronos 3
+#define XRONOS2 // Comment out for Xronos 3
 
 #include <Arduino.h>
 #include <avr/pgmspace.h>                // Enable data to be stored in Flash Mem as well as SRAM              
