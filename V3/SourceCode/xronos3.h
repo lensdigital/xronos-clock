@@ -131,7 +131,7 @@ const byte SUN =     B00000001; // 1
 #define NODEID      1
 #define NETWORKID   1
 #define GATEWAYID   9
-#define KEY         "aYBeAjCq7ykHpUE6" //has to be same 16 characters/bytes on all nodes, not more not less!
+#define KEY         "USE UNIQUE KEY" //has to be same 16 characters/bytes on all nodes, not more not less!
 //#define LED         9
 #define ACK_TIME    30  // # of ms to wait for an ack
 // Need an instance of the Radio Module
