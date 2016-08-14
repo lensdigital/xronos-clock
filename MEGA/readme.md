@@ -3,6 +3,7 @@ Expermiental firmware for Xronos Mega Clock (Four 24x16 LED Matrix screens(singl
 Uploading instructions (Windows):
 Upload via FTDI or similar USB to Serial adapter (6 pin).
 You can either use Arduino IDE 1.6.10 with included sketch (make sure you have all required libraries)
+
 To upload hex firmware:
   - copy AVRDUDE version 6.3 to know location (i.e. C:\Xronos\AVR). Are required files included with Arduino IDE 1.6.10
   - save all *.bat and *.hex files to some folder on your computer
