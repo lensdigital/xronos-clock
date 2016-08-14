@@ -8,11 +8,16 @@
 * NOTE:  
 * TO use with Xronos 2 UNCOMMENT #define XRONOS2 here,  HT1632.h and WavePinDefs.h (part of WaveHC library) files (for Xronos 3, comment them out)
 * 
+* Known issues: 
+* - When changing hours during timesetting, date might change due to possible bug in Time or Timezone library. Always check day after setting hours.
+* 
+* V01: Fix hours not showing correct time in 12hr mode and AM dot
+* V02: Fix date (was showing UTC)
 */
-#define XRONOS2 // Comment out for Xronos 3
+//#define XRONOS2 // Comment out for Xronos 3
 
 #include "xronos3.h"
-#define firmware_ver 300 // Current Firmware version
+#define firmware_ver 302 // Current Firmware version
 
 void setup ()  
 {

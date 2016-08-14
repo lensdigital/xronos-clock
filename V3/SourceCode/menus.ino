@@ -375,8 +375,8 @@ void setTimeDate() {
     case 5: // Set Years 
       if (decrement) years--;
       else years++;
-      if (years < 13 ) years = 40;
-      else if (years > 40) years = 13; // Default to 2013
+      if (years < 16 ) years = 40;
+      else if (years > 40) years = 16; // Default to 2013
       break;
     case 6: // Set Timezone
       playSFX(1);

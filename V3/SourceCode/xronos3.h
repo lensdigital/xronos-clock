@@ -131,7 +131,7 @@ const byte SUN =     B00000001; // 1
 #define NODEID      1
 #define NETWORKID   1
 #define GATEWAYID   9
-#define KEY         "USE UNIQUE KEY" //has to be same 16 characters/bytes on all nodes, not more not less!
+#define KEY         "aYBeAjCq7ykHpUE6" //has to be same 16 characters/bytes on all nodes, not more not less!
 //#define LED         9
 #define ACK_TIME    30  // # of ms to wait for an ack
 // Need an instance of the Radio Module
@@ -373,4 +373,6 @@ byte currTZ=EEPROM.read(currTZLoc); // Read Current Timezone Index
 Timezone myTZ(TZAddr[currTZ]);
 TimeChangeRule *tcr;        //pointer to the time change rule, use to get TZ abbrev
 time_t utc, local;
+
+#define LOCAL_TZ myTZ.toLocal(now(), &tcr) // Conversion to current timezone
 

@@ -231,9 +231,9 @@ boolean alarmInfo(byte alrmNum){
 void sayTime(){
      playcomplete("TIME_IS.WAV");
      char myString[9];
-     myhours=hour(myTZ.toLocal(now(), &tcr)); // Converter from UTC to local
+     myhours=hour(LOCAL_TZ); // Converter from UTC to local
      if(time12hr) { // == 12 Hour Mode ====
-       snprintf(myString,sizeof(myString), "%d.WAV",hourFormat12()); // Make Hours string
+       snprintf(myString,sizeof(myString), "%d.WAV",hourFormat12(LOCAL_TZ ) ); // Make Hours string
        playcomplete(myString); // Play Hours
      }
      else // == 24 Hour Mode ====
@@ -279,7 +279,7 @@ void sayTime(){
      }
      // If needed say AM or PM
      if(time12hr) { // == 12 Hour Mode ====
-       if (isAM() ) playcomplete("AM.WAV");
+       if (isAM(LOCAL_TZ))  playcomplete("AM.WAV");
        else playcomplete("PM.WAV");
      }
    
@@ -409,12 +409,12 @@ void sayTemp(int temp, boolean location){
 // By: LensDigital
 // ---------------------------------------------------------------------------------------
 void sayDate(){
-    char myString[10];
+  char myString[10];
   char dayofweek[4]; // Keeps day of week
   playcomplete("TODAY.WAV");
   playcomplete("IS.WAV");
   Serial.println ("Say Date!");
-  switch (weekday()){
+  switch (weekday(LOCAL_TZ)){
     case 1: //Sunday
     strcpy(dayofweek,"SUN");
     break;
@@ -439,15 +439,15 @@ void sayDate(){
   }
   snprintf(myString,sizeof(myString), "%s.WAV",dayofweek); // Day of Week
   playcomplete(myString);
-  snprintf(myString,sizeof(myString), "%s.WAV",monthShortStr(month()) ); // month
+  snprintf(myString,sizeof(myString), "%s.WAV",monthShortStr(month(LOCAL_TZ)) ); // month
   playcomplete(myString);
-  if (day()<20) {
-      snprintf(myString,sizeof(myString), "%dst.WAV",day()); // Make Day String
+  if (day(LOCAL_TZ)<20) {
+      snprintf(myString,sizeof(myString), "%dst.WAV",day(LOCAL_TZ)); // Make Day String
       playcomplete(myString);
          
   }
   else { // Make complex 2 digit sound
-       days=(day()/10)%10;
+       days=(day(LOCAL_TZ)/10)%10;
        switch (days){ // Create 1st digit sound
          case 2:
            playcomplete ("20.WAV");
@@ -456,14 +456,14 @@ void sayDate(){
            playcomplete ("30.WAV");
            break;
        }
-       if ((day()%10)!=0) { // Don't say if last digit is 0
-         snprintf(myString,sizeof(myString),"%dst.WAV",day()%10); // Make 2nd digit
+       if ((day(LOCAL_TZ)%10)!=0) { // Don't say if last digit is 0
+         snprintf(myString,sizeof(myString),"%dst.WAV",day(LOCAL_TZ)%10); // Make 2nd digit
          playcomplete(myString); // Play 
        }
      }
   playcomplete("2.WAV");
   playcomplete("1000.WAV");
-  snprintf(myString,sizeof(myString), "%d.WAV",year()%100); // Make 2nd digit
+  snprintf(myString,sizeof(myString), "%d.WAV",year(LOCAL_TZ)%100); // Make 2nd digit
   playcomplete(myString); // Play 
 }
 
@@ -522,8 +522,8 @@ void showBigTime(byte color){
   if(time12hr) {
   // == BEGIN 12 Hour Mode ====
     x=2; //offset horus by 2 dots
-    myhours=hourFormat12();
-    if (isAM()) plot (0,1,hhColor); // Show AM Dot
+    myhours=hourFormat12(LOCAL_TZ);
+    if (isAM(LOCAL_TZ)) plot (0,1,hhColor); // Show AM Dot
     else plot (0,1,BLACK); // Hide AM Dot
     if ( (myhours/10)%10 == 0 ) showDigit(0-x,2,1,5,clockFont,BLACK); // Hide first digit 
     else showDigit(0-x,2,(myhours/10)%10,5,clockFont,hhColor);
@@ -532,7 +532,7 @@ void showBigTime(byte color){
   else {
   // 24 Hour Mode
    //myhours=hour();
-   myhours=hour(myTZ.toLocal(now(), &tcr)); // Converter from UTC to local
+   myhours=hour(LOCAL_TZ); // Converter from UTC to local
     //plot (0,1,BLACK); // Hide AM Dot
     showDigit(0,2,(myhours/10)%10,5,clockFont,hhColor); // Show 1st digit of hour
   }
@@ -556,8 +556,8 @@ void showSmTime (byte location,byte color){
   // Check if we are running in 12 Hour Mode:
   if(time12hr) {
   // == BEGIN 12 Hour Mode ====
-    myhours=hourFormat12();
-    if (isAM()) plot (0,1,color); // Show AM Dot
+    myhours=hourFormat12(LOCAL_TZ);
+    if (isAM(LOCAL_TZ)) plot (0,1,color); // Show AM Dot
     else plot (0,1,BLACK); // Hide AM Dot
     snprintf(myString,sizeof(myString), "%d",myhours); // Make hour string
     if ( (myhours/10)%10 == 0 )  // It's one digit hour so need to shift it to the right
@@ -622,11 +622,11 @@ void mainDate(byte color){
   }
   // --- END OF BLINK PROCESSOR
    
-   snprintf(dateString, sizeof(dateString),"%s",monthShortStr(month()) ); // Create Month String
+   snprintf(dateString, sizeof(dateString),"%s",monthShortStr(month(LOCAL_TZ)) ); // Create Month String
    showText(1,0,dateString,2,monColor); // Show month
-   snprintf(dateString, sizeof(dateString),"%2d",day() ); // create Day strng
+   snprintf(dateString, sizeof(dateString),"%2d",day(LOCAL_TZ) ); // create Day strng
    showText(20,0,dateString,2,ddColor); // Show day
-   snprintf(dateString, sizeof(dateString),"%2d",(year()) ); // create Year String
+   snprintf(dateString, sizeof(dateString),"%2d",(year(LOCAL_TZ)) ); // create Year String
    showText(5,8,dateString,1,yyColor); // Show year
 }
 // ---------------------------------------------------------------------------------------
@@ -690,7 +690,7 @@ boolean showDate(byte color){
   char dateString[14]; // stores formatted date
   //showSmTime(0,color); // Show small digit time on top
   // Format Date and store in dateString array
-     snprintf(dateString,sizeof(dateString), "%s %02d, %d ",monthShortStr(month()),day(),year());
+     snprintf(dateString,sizeof(dateString), "%s %02d, %d ",monthShortStr(month(LOCAL_TZ)),day(LOCAL_TZ),year(LOCAL_TZ));
      return scrolltextsizexcolor(8,dateString,color,25);
 }
 

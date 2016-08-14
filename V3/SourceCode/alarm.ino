@@ -9,7 +9,7 @@ void procAlarm(byte alrmnum) {
     if (alarmon[alrmnum] & 128){ // Is global alarm switch on? (1st byte is set)
       // ==== Begin alarm LED indicator ====
       if ( snoozeTime[alrmnum]==10) {
-        if ( alarmon[alrmnum] & weekdays[weekday()] ) plot (29*alrmnum+1,15,RED); // Show dot in Orange, indicating that alarm is set for current day
+        if ( alarmon[alrmnum] & weekdays[weekday(LOCAL_TZ)] ) plot (29*alrmnum+1,15,RED); // Show dot in Orange, indicating that alarm is set for current day
         else   plot (29*alrmnum+1,15,GREEN); // No alarm today so show green dot in lower right corner 
       } 
       else plot (29*alrmnum+1,15,ORANGE); // Show dot in RED if snoozing (Maybe do blinking in the future too)
@@ -35,7 +35,7 @@ void procAlarm(byte alrmnum) {
          if ( (alarmon[alrmnum] == 2) && ( (weekday() == 1) || (weekday () == 7) ) ) ;// Do nothing, cause it's weekend and alarm was set to weekday
          else // It's Either Daily alarm or we are in Mon-Fri range
          */
-         if ( alarmon[alrmnum] & weekdays[weekday()] ) // Alarm is scheduled for this day!
+         if ( alarmon[alrmnum] & weekdays[weekday(LOCAL_TZ)] ) // Alarm is scheduled for this day!
           if ( (myhours==alrmHH[alrmnum]) && ( minute()==alrmMM[alrmnum])  ) {
             if (alrmnum==0) { // It's first alarm processor
               soundAlarm[1]=false; //Innterrupts 2nd alarm if it's playing
