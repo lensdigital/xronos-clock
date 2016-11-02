@@ -26,7 +26,7 @@
 
 #define XRONOS2 // Comment out for Xronos 3
 
-#if defined XRONOS2 // Different logic for Xronos 2 button pullups
+#ifdef XRONOS2 // Different logic for Xronos 2 button pullups
   #define BUTTON_OFF LOW
   #define BUTTON_ON HIGH  
 #else

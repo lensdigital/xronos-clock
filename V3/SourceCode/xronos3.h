@@ -1,7 +1,6 @@
 /* Xronos Clock V3 definitions and vars */
 
 //#define RFM69_CHIP // Comment out for RFM12b
-#define XRONOS2 // Comment out for Xronos 3
 
 #include <Arduino.h>
 #include <avr/pgmspace.h>                // Enable data to be stored in Flash Mem as well as SRAM              
@@ -323,6 +322,7 @@ const byte alarmToneLoc[2]={7,12};                    // Alarm  Tone storage loc
 #define PSTLoc AZSTLoc+48 // US Pacific
 #define AKSTLoc PSTLoc+48 // US Alaska
 #define HSTLoc AKSTLoc+48 // US Hawaii
+#define UTCLoc HSTLoc+48 // US Hawaii
 
 // Vars that hold Network values from EEPROM
 
@@ -338,6 +338,10 @@ char sUptime[12];// Sensor uptime string (dd:hh:mm:ss)
 
 // ===================================================================================
 // Time Zone definitions
+// ===================================================================================
+// UTC (no DST)
+TimeChangeRule UTC = {"UTC", Second, Sun, Mar, 2, 0};    //UTC
+Timezone Universal(UTC, UTC);
 //US Eastern Time Zone (New York, Detroit)
 TimeChangeRule usEdt = {"EDT", Second, Sun, Mar, 2, -240};    //UTC - 4 hours
 TimeChangeRule usEst = {"EST", First, Sun, Nov, 2, -300};     //UTC - 5 hours
@@ -369,7 +373,9 @@ Timezone usHawaii(usHdt, usHst);
 
 // Set Timezone (Read from EEPROM)
 byte currTZ=EEPROM.read(currTZLoc); // Read Current Timezone Index
-//if (currTZ > 7) currTZ=0; // Failsafe in case EEPROM was not initialized
+#if (currTZ > 8)   // Failsafe in case EEPROM was not initialized
+  currTZ=0;
+#endif
 Timezone myTZ(TZAddr[currTZ]);
 TimeChangeRule *tcr;        //pointer to the time change rule, use to get TZ abbrev
 time_t utc, local;

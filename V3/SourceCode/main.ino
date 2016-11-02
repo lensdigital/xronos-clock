@@ -89,6 +89,7 @@ void initEPROM()
   usPacific.writeRules(PSTLoc);
   usAlaska.writeRules(AKSTLoc);
   usHawaii.writeRules(HSTLoc);
+  Universal.writeRules(UTCLoc);
 }
 
 // Display divider colon :
@@ -896,7 +897,7 @@ void autoBrightness () {
 // By: LensDigital
 // =======================================================================================
 boolean showHumidity(byte color, bool location, bool speak) {
-  #ifdef XRONOS 2
+  #ifdef XRONOS2
     if (location==0) return; // Xronos 2 doesn't have internal humidity sensor
   #endif
   int humidity;
@@ -932,7 +933,7 @@ boolean showHumidity(byte color, bool location, bool speak) {
 // By: LensDigital
 // =======================================================================================
 void sayHumidity(boolean location) {
-    #ifdef XRONOS 2
+    #ifdef XRONOS2
       if (location==0) return; // Xronos 2 doesn't have internal humidity sensor
     #endif
     char myString[8];

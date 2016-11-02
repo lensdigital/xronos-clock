@@ -10,7 +10,7 @@ char *sysRFMStr[7]={"Turn","FREQ","NODE","NET","SNSR","ENCR","Exit"};
 char *optMenuStr[3][2]={ {"Info","Displ"}, {"Talk","Items"}, {"Temp","Offs:-"} };
 char *optInfoDispStr[10]={"Scrol", "Every","Date", "InTemp", "ExTemp", "Alarm", "RFStat", "InHum","ExHum","Exit" };
 char *optSayStr[9]={"Say", "Time", "Date", "InTemp","ExTemp", "InHum", "ExHum", "Alrm", "Exit" };
-char *TZMenuStr[7]={"EST","CST","MNT","AZ","PST","AL","HI"};
+char *TZMenuStr[8]={"EST","CST","MNT","AZ","PST","AL","HI","UTC"};
 
 // =======================================================================================
 // ---- Show Menu items and set vars ----
@@ -382,8 +382,8 @@ void setTimeDate() {
       playSFX(1);
       if (decrement) currTZ--;
       else currTZ++;
-      if (currTZ < 0 ) currTZ = 6;
-      else if (currTZ > 6) currTZ = 0; // Default to 2016
+      if (currTZ < 0 ) currTZ = 7;
+      else if (currTZ > 7) currTZ = 0; // Default to 2016
       EEPROM.write(currTZLoc,currTZ);
       delay (15);
       rebootPending=true;
