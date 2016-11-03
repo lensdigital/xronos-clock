@@ -22,7 +22,11 @@
 #if defined (RFM69_CHIP) 
   #include <RFM69.h>
 #else 
-  #include <RFM12B_arssi.h>
+  #ifdef XRONOS2
+    #include <RFM12B.h>
+  #else
+    #include <RFM12B_arssi.h>
+  #endif
 #endif
 #include <SPI.h>
 #include <IRremote.h> // Comment out if IR reciever not present

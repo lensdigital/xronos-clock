@@ -563,30 +563,8 @@ void sysSetting(){
       case 11: // Factor Reset (INIT EEPROM)
         cls(); 
         initEPROM();
-        getEEPROMSettings ();
-         // Exit and reinitialize
-        isInMenu = false;
-        isSettingTime = false;
-        isSettingDate = false;
-        isSettingAlarm = false;
-        isSettingSys=false;
-        isSettingOptions=false;
-        blinking = false;
-        isSettingHours   = false;
-        isSettingMinutes = false;
-        isSettingMonth   = false;
-        isSettingDay   = false;
-        isSettingYear   = false;
-        menuItem=0;
-        decrement=false;
-       for (int i=0;i<MAX_SUBMENUS;i++) { // Initialize SubMenus
-          subMenu[i]=0;
-       }
-       
-        okClock=true; 
-        isIncrementing = false; 
-        cls();
-        rebootPending=true;
+        delay (100);
+        softReboot();
       break;
   }
 

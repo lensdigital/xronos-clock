@@ -13,11 +13,13 @@
 * 
 * V01: Fix hours not showing correct time in 12hr mode and AM dot
 * V02: Fix date (was showing UTC)
+* V03: UTC Timezone (no DTS)
+* V04: Switch back to RFM12b library
 */
-//#define XRONOS2 // Comment out for Xronos 3
+#define XRONOS2 // Comment out for Xronos 3
 
 #include "xronos3.h"
-#define firmware_ver 302 // Current Firmware version
+#define firmware_ver 303 // Current Firmware version
 
 void setup ()  
 {
