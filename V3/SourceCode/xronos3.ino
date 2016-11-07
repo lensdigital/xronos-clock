@@ -430,5 +430,5 @@ void showFWVersion(){
     snprintf(welcome, sizeof(welcome),"Firmware:V%d.%d%d",first,scnd,third); 
     Serial.println (welcome);
 }
->>>>>>> origin/master
+
 
