@@ -15,11 +15,12 @@
 * V02: Fix date (was showing UTC)
 * V03: UTC Timezone (no DTS)
 * V04: Switch back to RFM12b library
+* V05: Fix Radio stats, fix QuickMenu (alarm not annoused)
 */
 #define XRONOS2 // Comment out for Xronos 3
 
 #include "xronos3.h"
-#define firmware_ver 303 // Current Firmware version
+#define firmware_ver 305 // Current Firmware version
 
 void setup ()  
 {
@@ -68,7 +69,6 @@ void loop ()
  procAlarm(0);
  procAlarm(1);
  buttonProc();
- //Serial.println (buttonsStatus[INC_BUTTON]);
  rearmAlrm(0);
  rearmAlrm(1);
  infoDisplay();
