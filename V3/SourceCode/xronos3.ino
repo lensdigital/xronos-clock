@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /***********************************************************************
 * August 08,2016 LensDigital 
 * See www.xronosclock.com for project details, schematics, etc.
