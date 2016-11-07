@@ -225,7 +225,7 @@ boolean radioOn=true;
 boolean isRadioPresent; // Defines in RFM12B Chip present. Stored in EEPROM
 boolean isIRPresent; // Defines if IR reciever is present
 boolean decrement; // Only used with IR remote to decrement digits (--)
-boolean RFRecieved=false; // Semaphor that keeps track if no IR recieved in certain time
+bool RFRecieved = false;// Semaphor that keeps track if no IR recieved in certain time 
 
 
 byte alrmHH[2]; // Alarm Hours
@@ -240,7 +240,7 @@ const byte weekdays[8]={0,1,64,32,16,8,4,2}; // Lookup table to convert Weekday 
 
 unsigned long blinkTime,alarmBlinkTime=0; // controls blinking of the dots
 unsigned long last_ms=0; // for setting seconds, etc.
-unsigned long last_RF=0; // Keeps track since last RF signal recieved
+long last_RF=0; // Keeps track since last RF signal recieved
 static unsigned long lastLReading = 0; // Keeps track of last time Autobrightness took reading
 volatile unsigned long lastButtonTime = 0;// last time a button was pushed; used for debouncing
 unsigned long lastRFEvent = 0;//Last time RF data was recieved

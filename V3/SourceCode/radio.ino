@@ -25,7 +25,7 @@ void radioInit() {
     radio.initialize(currFreq, RF_Node, RF_Network);
     if (RF_Encrypt) radio.encrypt(KEY);
     radio.sleep();
-    sprintf(buff, "%d Mhz. NODE:%d, NET:%d", currFreq==RF69_433MHZ ? 433 : RF_Frequency==RF69_868MHZ ? 868 : 915,RF_Node,RF_Network);
+    sprintf(buff, "%d Mhz. NODE:%d, NET:%d", currFreq==RF69_433MHZ ? 433 : currFreq==RF69_868MHZ ? 868 : 915,RF_Node,RF_Network);
   #else
     switch (RF_Frequency) {
       case 0:
@@ -55,10 +55,9 @@ void radioInit() {
     radio.Initialize(RF_Node, currFreq, RF_Network); 
     if (RF_Encrypt) radio.Encrypt(KEY);
     //radio.Sleep();
-    sprintf(buff, "%d Mhz. NODE:%d, NET:%d", currFreq==RF12_433MHZ ? 433 : RF_Frequency==RF12_868MHZ ? 868 : 915,RF_Node,RF_Network);
+    sprintf(buff, "%d Mhz. NODE:%d, NET:%d", currFreq==RF12_433MHZ ? 433 : currFreq==RF12_868MHZ ? 868 : 915,RF_Node,RF_Network);
   #endif
   Serial.println (buff);
-  //Serial.println (RF_Frequency);//debug
 }
 
 
@@ -73,37 +72,19 @@ void recieveTemp() {
   if (isInMenu) return;
   //Serial.println ("Radio on");
   if (isInQMenu) return;
-  //unsigned long tNow = now();
-  int iRF,iNow; // Keeps track in minutes when last time RF singal was recieved.
-  /*
-  if (!radioOn) {
-    //radio.WAKEUP(); // Turn on Radio
-    radio.receiveDone();
-    radioOn=true;
-    //putstring_nl ("Radio Wake up!");
-  }
-  */
-
- //if (  ((millis()-last_RF) > 900000 ) || last_RF==0) plot (31,0,RED); //Indicate that temp hasn't been recieved in over 15 min
-  // Handle RF Indicator LED
-  iRF=hour(last_RF)*60 + minute(last_RF); // Get time of last recieved signal in minutes
-  iNow=myhours*60 + minute(now()); // Get current time in minutes
-  if ((iNow-iRF) > RF_TIMEOUT ) RFRecieved=false; // Didn't recieve signal in RF_TEMOUT minutes
-  if (!RFRecieved)plot (31,0,RED); //Indicate that temp hasn't been recieved in some time
-  //else if ( (millis()-last_RF) > 5000 ) plot (31,0,BLACK); //Hide indicator
-  else  plot (31,0,BLACK); //Hide indicator
   char tempC[3];
   char humidity[3];
-  //digitalWrite(SS_SD,HIGH); // Disable SD Card / Audio
+  #if defined XRONOS2
+    digitalWrite(SS_SD,HIGH); // Disable SD Card / Audio
+  #endif
   #if defined (RFM69_CHIP) // Version for RFM69
     if (radio.receiveDone())
       {
+       RFRecieved=true;
         //Serial.println (now());
        putstring_nl ("Receiving Data...");
-       plot (31,0,GREEN); //Plot Indicator dot (radio signal was recieved)
        if ( (radio.DATALEN) > 2 && (radio.SENDERID==RF_SensorID) ) { // Make sure recieved data is not empty and came from rigth node
-        last_RF= now();
-        RFRecieved=true;
+       last_RF= now();
        memset(RFBuffer, 0, sizeof(RFBuffer)); // Clear Buffer
        for (int i=0; i<radio.DATALEN;i++){ // Fill buffer
               RFBuffer[i]=radio.DATA[i];
@@ -139,15 +120,13 @@ void recieveTemp() {
         {
           if (radio.CRCPass())
           {
-            //Serial.println (now());
+           RFRecieved=true;
            putstring_nl ("Receiving Data...");
-           //plot (31,0,GREEN); //Plot Indicator dot (radio signal was recieved)
            if (radio.GetDataLen() > 2) { // Make sure recieved data is not empty 
-            last_RF= now();
+            last_RF = now();
             lastRFEvent=millis();
-            RFRecieved=true;
-           memset(RFBuffer, 0, sizeof(RFBuffer)); // Clear Buffer
-           for (int i=0; i<radio.GetDataLen();i++){ // Fill buffer
+            memset(RFBuffer, 0, sizeof(RFBuffer)); // Clear Buffer
+            for (int i=0; i<radio.GetDataLen();i++){ // Fill buffer
                   RFBuffer[i]=radio.Data[i];
                   //Serial.print (RFBuffer[i]);
                   
@@ -224,8 +203,6 @@ void parseSensorData() {
         Serial.println("");
         tempBuff[j]='\0'; // Terminate with null
         extHum = atol(tempBuff); // Assign external Temp variable Integer number
-        Serial.print(extHum);
-        Serial.println ("%");
       }
      if (RFBuffer[i]!='\0') i++; // Failsafe so we don't go over end of string
   
