@@ -15,12 +15,13 @@
 * V02: Fix date (was showing UTC)
 * V03: UTC Timezone (no DTS)
 * V04: Switch back to RFM12b library
-* V05: Fix Radio stats, fix QuickMenu (alarm not annoused)
+* V05: Fix Radio stats, fix QuickMenu (alarm not annouced), fix Radio Frequency display
+* V06: Show date in Radio Stats if it hasn't updated in long time
 */
 #define XRONOS2 // Comment out for Xronos 3
 
 #include "xronos3.h"
-#define firmware_ver 305 // Current Firmware version
+#define firmware_ver 306 // Current Firmware version
 
 void setup ()  
 {

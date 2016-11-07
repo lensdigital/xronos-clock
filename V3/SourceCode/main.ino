@@ -712,7 +712,7 @@ void talkingMenu (boolean mmode) {
   }
   else { // Multiple items talk mode (say all of them)
     mbutState=1;
-    while (mbutState < 7) { // Go thru all 6 items
+    while (mbutState < 8) { // Go thru all 7 items
       sayItem();
      mbutState++;
     } // End While
@@ -730,7 +730,10 @@ void talkingMenu (boolean mmode) {
 // ---- by LensDigital
 // ====================================================================================================
 void sayItem () {
+   //Serial.print ("DEBUG: mbutState: "); Serial.println (mbutState);
+  
 switch (mbutState) {
+ 
    case 1: // Show/Say Time
     if (sayOptions & SO_Time) { // This option is enabled
       cls();
@@ -784,6 +787,8 @@ switch (mbutState) {
     #endif
   case 6: // Say and show Outdoor humidity
     if (sayOptions & SO_OutHum) {  // This option is enabled
+      isSettingDate = false;
+      okClock=false;
       cls();
       showHumidity(ORANGE,1,true);
      break;
@@ -913,7 +918,6 @@ boolean showHumidity(byte color, bool location, bool speak) {
     return scrolltextsizexcolor(8,"Humidity Sensor ERROR",RED,5);
     //jumpTextVertical(5,BOTTOM_SCREEN,RAISE_UP,FLY_IN,"ERR", 1,color, 25);
   }
-  
   if(!speak) { //Scroll
     if (location==0) snprintf(myString,sizeof(myString), "Inside Humidity %2d%%",humidity); // Scroll  Humidity
     else snprintf(myString,sizeof(myString), "Outside Humidity %2d%%",humidity); // Scroll  Humidity
@@ -965,13 +969,23 @@ void sayHumidity(boolean location) {
 // =======================================================================================
 void showSensorData() {
   char myString[44];
-   if (RFRecieved) { // Show sensor timestamp
+  byte tColor=clockColor; // Changes text color based on how stale data is (i.e. red if no data recieved in a while)
+  if (RFRecieved) { // Show sensor timestamp
+          if ((unsigned long)millis()-lastRFEvent < RFTimeout*60000 ) {
+              snprintf(myString,sizeof(myString), "Sns data rcv at %02d:%02d",hour(myTZ.toLocal(last_RF, &tcr)),minute(last_RF) );
+              tColor=clockColor;
+          }
+          else {
+            snprintf(myString,sizeof(myString), "Sns data rcv %02d/%02d at %02d:%02d",month(myTZ.toLocal(last_RF, &tcr)),day(myTZ.toLocal(last_RF, &tcr)), hour(myTZ.toLocal(last_RF, &tcr)),minute(last_RF) );
+            tColor = RED;
+            
+          }
           // Split batter 3 digit voltage into separate digits
           byte first=sBatt/100; // Thousand
           byte scnd =(sBatt%100)/10;
           byte third=sBatt%10;
           showSmTime(0,clockColor); // Show Time on top
-          snprintf(myString,sizeof(myString), "Sns data rcv at %02d:%02d",hour(last_RF),minute(last_RF));
+          //snprintf(myString,sizeof(myString), "Sns data rcv at %02d:%02d",hour(myTZ.toLocal(last_RF, &tcr)),minute(last_RF) );
           if (! scrolltextsizexcolor(8,myString,clockColor,5) ) return;
            // Show battery info
           cls();
@@ -987,11 +1001,9 @@ void showSensorData() {
           if (! scrolltextsizexcolor(8,myString,clockColor,5) ) return;
           */
      }
-        else { // Sensor data hasn't been reiceved in a while
-          showSmTime(0,clockColor); // Show Time on top
-          snprintf(myString,sizeof(myString), "Sensor data not recieved in over %2d minutes",RF_TIMEOUT);
-         // Serial.println (last_RF);
-          if (! scrolltextsizexcolor(8,myString,RED,5) ) return;
+   else { // Sensor data NEVER been recieved yet
+         showSmTime(0,clockColor); // Show Time on top
+         if (! scrolltextsizexcolor(8,"No sensor data",RED,5) ) return;
         }
 }
 
