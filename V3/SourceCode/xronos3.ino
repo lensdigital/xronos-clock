@@ -15,7 +15,7 @@
 * V02: Fix date (was showing UTC)
 * V03: UTC Timezone (no DTS)
 * V04: Switch back to RFM12b library
-* V05: Fix Radio stats, fix QuickMenu (alarm not annoused)
+* V05: Fix Radio stats, fix QuickMenu (alarm not annouced), fix Radio Frequency display
 */
 #define XRONOS2 // Comment out for Xronos 3
 
