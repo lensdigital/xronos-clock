@@ -7,6 +7,7 @@ What's new in V3 firmware:
 - Radio settings (such as frequency, node IDs, etc.) can now be changed in Setup menu
 - Most definitions moved to xronos3.h file for cleaner look
 - Si7021 temperature and humidity internal sensor now supported
+- Supports SoundZ library (audio playback from SPI Flash)
 - Button logic was rewritten, holding INCR button for 2 seconds will activate accelerated incrementation in settings of the time, alarm, etc.
 To use code for Xronos 2.1 clocks, just uncomment "#define XRONOS2" from main file as well as HT1632.h and WavePinDefs.h (part of modified WaveHC library)
 You must initialize EEPROM to write all Timezone rules to it. Do it by either uncommenting initEEPROM() in setup function or thru the menu.
