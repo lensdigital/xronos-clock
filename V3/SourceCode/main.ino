@@ -12,7 +12,7 @@ void startup ()
   int ver3 = temp % 10; // Last digit
   int ver2 = (temp - ver3) / 10; // Second Digit
   ver = (ver - ver2) / 100; // First digitf
-  playfile("startup1.wav");
+  playfile("STARTUP1.WAV");
   showText(0,0,"Welcome",3,GREEN);
   snprintf(welcome, sizeof(welcome),"Firmware:V%d.%d%d",ver,ver2,ver3); 
   scrolltextsizexcolor(8,welcome,RED,15);
@@ -65,7 +65,7 @@ void initEPROM()
   delay (50);
   EEPROM.write(radioOnLoc,false); // Disable RFM by default during INIT
   delay (50);
-  EEPROM.write(IROnLoc,false); // Disable IR by default during INIT
+  EEPROM.write(IROnLoc,true); // Disable IR by default during INIT
   delay (50);
   EEPROM.write(RF_FreqLoc,0); // Write Frequency
   delay (50);
@@ -401,7 +401,7 @@ void sayTemp(int temp, boolean location){
   }
   playcomplete("DEGREES.WAV");
   if (tempUnit) playcomplete("fahrenh.WAV");
-  else playcomplete("celcius.WAV");
+  else playcomplete("CELCIUS.WAV");
 }
 
 
@@ -443,7 +443,7 @@ void sayDate(){
   snprintf(myString,sizeof(myString), "%s.WAV",monthShortStr(month(LOCAL_TZ)) ); // month
   playcomplete(myString);
   if (day(LOCAL_TZ)<20) {
-      snprintf(myString,sizeof(myString), "%dst.WAV",day(LOCAL_TZ)); // Make Day String
+      snprintf(myString,sizeof(myString), "%dST.WAV",day(LOCAL_TZ)); // Make Day String
       playcomplete(myString);
          
   }
@@ -458,7 +458,7 @@ void sayDate(){
            break;
        }
        if ((day(LOCAL_TZ)%10)!=0) { // Don't say if last digit is 0
-         snprintf(myString,sizeof(myString),"%dst.WAV",day(LOCAL_TZ)%10); // Make 2nd digit
+         snprintf(myString,sizeof(myString),"%dST.WAV",day(LOCAL_TZ)%10); // Make 2nd digit
          playcomplete(myString); // Play 
        }
      }
@@ -636,17 +636,18 @@ void mainDate(byte color){
 // =======================================================================================
 // ---- Display Current Temperature  ----
 // ---- speak = true if voice annoucment desired
-// ---- location (0=inside, 1=outside, 2=both)
+// ---- location (0=inside, 1=outside)
 // By: LensDigital
 // =======================================================================================
 boolean showTemp(byte color,boolean speak, boolean location){
   char myString[32];
   char tempInOut[7];
+  int tempC;
+  float tempF;
   byte tmpOffset2=0; // will differ if getting temp from outside
   if (location)  tmpOffset2=tmpOffset; //Only for Inside temp Actual offset is used
   boolean returnVal=true;// Return value
-  float tempC;
-  if (location) { // Get temperature from attached sensor
+  if (location) { // Get temperature from internal (attached) sensor
     getIntSensorData();
     tempC = tempCint;
     snprintf(tempInOut,sizeof(tempInOut), "In");
@@ -662,22 +663,23 @@ boolean showTemp(byte color,boolean speak, boolean location){
     showSmTime(0,color); // Show small digit time on top
     return scrolltextsizexcolor(8,myString,RED,5);
  }
-  float tempF = (tempC * 1.8) + 32.0; // Convert to Farenheit
-  int tempCint = int(tempC +0.5) - tmpOffset2;// Convert round off decimal to whole number.
-  int tempFint = int(tempF +0.5) - tmpOffset2; // Convert round off decimal to whole number.
+  tempF = (tempC * 1.8) + 32.0; // Convert to Farenheit
+  int tempFInt = (int)(tempF+0.5); // Convert Float to Integer
+  tempC = tempC - tmpOffset2;// Convert round off decimal to whole number.
+  tempFInt = tempFInt - tmpOffset2; // Convert round off decimal to whole number.
   showSmTime(0,color); // Show small digit time on top
   if(!speak) { //Scroll Temp
-  if (tempUnit) snprintf(myString,sizeof(myString), "%s Temp:%dF ",tempInOut,tempFint); // Format String for Farenheight
-  else snprintf(myString,sizeof(myString), "%s Temp:%dC ",tempInOut,tempCint); // Format String for Celcius
+  if (tempUnit) snprintf(myString,sizeof(myString), "%s Temp:%dF ",tempInOut,tempFInt); // Format String for Farenheight
+  else snprintf(myString,sizeof(myString), "%s Temp:%dC ",tempInOut,tempC); // Format String for Celcius
     returnVal=scrolltextsizexcolor(8,myString,color,20); 
   }
   if (speak) {
-    if (tempUnit) snprintf(myString,sizeof(myString), "%dF ",tempFint); // Short Format String for Farenheight
-    else  snprintf(myString,sizeof(myString), "%dC ",tempCint); // Short Format String for Farenheight
+    if (tempUnit) snprintf(myString,sizeof(myString), "%dF ",tempFInt); // Short Format String for Farenheight
+    else  snprintf(myString,sizeof(myString), "%dC ",tempC); // Short Format String for Farenheight
     //showText(5,8,myString,1,color); // Show Static Temp string
     jumpTextVertical(5,BOTTOM_SCREEN,RAISE_UP,FLY_IN,myString, 1,color, 25);
-    if (tempUnit) sayTemp(tempFint,location);
-    else sayTemp(tempCint,location);
+    if (tempUnit) sayTemp(tempFInt,location);
+    else sayTemp(tempC,location);
   }
   return returnVal;
 }
@@ -919,8 +921,8 @@ boolean showHumidity(byte color, bool location, bool speak) {
     //jumpTextVertical(5,BOTTOM_SCREEN,RAISE_UP,FLY_IN,"ERR", 1,color, 25);
   }
   if(!speak) { //Scroll
-    if (location==0) snprintf(myString,sizeof(myString), "Inside Humidity %2d%%",humidity); // Scroll  Humidity
-    else snprintf(myString,sizeof(myString), "Outside Humidity %2d%%",humidity); // Scroll  Humidity
+    if (location==0) snprintf(myString,sizeof(myString), "In Humidity %2d%%",humidity); // Scroll  Humidity
+    else snprintf(myString,sizeof(myString), "Out Humidity %2d%%",humidity); // Scroll  Humidity
     return scrolltextsizexcolor(8,myString,clockColor,20);
   }
   else {
@@ -1017,14 +1019,9 @@ void getIntSensorData() {
     sensors.requestTemperatures(); // Send the command to get temperatures
     temperature=sensors.getTempC(insideThermometer);
   #else
-      temperature=TH02.ReadTemperature();
-     // Serial.println (temperature);
-      rhvalue=TH02.ReadHumidity();
-      // Calculate linear compensation
-      rhlinear = rhvalue - ((rhvalue*rhvalue) * TH02_A2 + rhvalue * TH02_A1 + TH02_A0);
-      rhvalue = rhlinear;
-     // Calculate humidty temperature compesation
-     rhvalue += (temperature - 30.0) * (rhlinear * TH02_Q1 + TH02_Q0);
+      si7021_env data = sensor.getHumidityAndTemperature();
+      temperature=data.celsiusHundredths/100;
+      rhvalue = data.humidityBasisPoints/100;
       // check if returns are valid, if they are NaN (not a number) then something went wrong!
      if (isnan(temperature) || isnan(rhvalue))  Serial.println("Failed to read from TH02");
      humidInt=int(rhvalue +0.5);
@@ -1051,7 +1048,7 @@ void getIntSensorData() {
 void TempInit(){
  // ===================================================================
   #if not defined XRONOS2
-    TH02.begin(); // Initi TH02 for Xronos 2
+    sensor.begin();
   #else // Init DS18B20 for Xronos 2
     //Serial.print("Locating DS18B20 temperature devices...");
     sensors.begin();

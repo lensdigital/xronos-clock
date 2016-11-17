@@ -17,11 +17,13 @@
 * V04: Switch back to RFM12b library
 * V05: Fix Radio stats, fix QuickMenu (alarm not annouced), fix Radio Frequency display
 * V06: Show date in Radio Stats if it hasn't updated in long time
+* V07: Si7021 sensor. SoundZ library with Serial Flash
+* V08: Fix External temperature display. Fix sensor data showing when data not recieved. Fix battery and humidity parsking (extra digit at the end)
 */
 #define XRONOS2 // Comment out for Xronos 3
 
 #include "xronos3.h"
-#define firmware_ver 306 // Current Firmware version
+#define firmware_ver 308 // Current Firmware version
 
 void setup ()  
 {
@@ -151,6 +153,7 @@ void getEEPROMSettings () {
 void IR_process () {
   if (!isIRPresent) return;
   if (irrecv.decode(&results)) {
+    //Serial.println ("Debug: Recieved IR signal");
     switch (results.value) {
       case IR_ON:
       //Serial.println ("Recieved ON/OFF");

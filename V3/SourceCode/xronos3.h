@@ -6,18 +6,24 @@
 #include <avr/pgmspace.h>                // Enable data to be stored in Flash Mem as well as SRAM              
 #include <avr/wdt.h>
 #include "HT1632.h"                     // Holtek LED driver by WestFW - updated to HT1632C by Nick Hall
-#include "WaveUtil.h" // Used by wave shield
-#include "WaveHC.h" // Used by wave shield (library modified by LensDigital to accomodate ATMega644p/ATMega1284p)
+#if defined XRONOS2
+  #include "WaveUtil.h" // Used by wave shield
+  #include "WaveHC.h" // Used by wave shield (library modified by LensDigital to accomodate ATMega644p/ATMega1284p)
+#else
+  #include <SoundZ.h>
+  #include <SoundZUtil.h>
+  #include <SerialFlash.h>
+#endif
 #include <Wire.h>
 #include <Time.h>  
 #include <DS1307RTC.h>  // Now supports DS3231 as well
 #include <stdlib.h> // Used for string manipulations and string to int conversions
 #include <EEPROM.h>
-#if defined XRONOS2
+#ifdef XRONOS2
   #include <OneWire.h>
   #include <DallasTemperature.h>
 #else
-  #include <TH02_dev.h>
+  #include <SI7021.h>
 #endif
 #if defined (RFM69_CHIP) 
   #include <RFM69.h>
@@ -33,22 +39,17 @@
 #include <Timezone.h>
 #include "myIR_Remote.h" // IR Codes defintion file (comment out if IR reciever not present)
 
-// THO2 Linearization Coefficients
-#define TH02_A0   -4.7844
-#define TH02_A1    0.4008
-#define TH02_A2   -0.00393
-// TH02 Temperature compensation Linearization Coefficients
-#define TH02_Q0   0.1973
-#define TH02_Q1   0.00237
-
-// Wave Shield Declarations
-SdReader card;    // This object holds the information for the card
-FatVolume vol;    // This holds the information for the partition on the card
-FatReader root;   // This holds the information for the filesystem on the card
-FatReader f;      // This holds the information for the file we're play
-
+#ifdef XRONOS2
+  // Wave Shield Declarations
+  SdReader card;    // This object holds the information for the card
+  FatVolume vol;    // This holds the information for the partition on the card
+  FatReader root;   // This holds the information for the filesystem on the card
+  FatReader f;      // This holds the information for the file we're play
+#else
+  #define FLASH_CS 20 //Pin connected to SPI Flash chip select
+  SerialFlashFile f; //Instance for current file
+#endif
 WaveHC wave;      // This is the only wave (audio) object, since we will only play one at a time
-
 
 // ============================================================================================
 // Important User Hardware config settings, modify as needed
@@ -154,6 +155,8 @@ byte RF_Frequency=0;
   DallasTemperature sensors(&ds);
   // arrays to hold device address
   DeviceAddress insideThermometer;
+#else
+  SI7021 sensor;
 #endif
 // ===================================================================================
 // Menus declarations

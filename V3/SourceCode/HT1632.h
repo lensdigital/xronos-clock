@@ -23,7 +23,6 @@
 //* Oct 15/11 (rp) added PUTINSNAPSHOTRAM, overlayWithSnapshotHorizontal(), overlayWithSnapshotVertical();
 //*
 //*********************************************************************************************************
-
 #define XRONOS2 // Comment out for Xronos 3
 
 #ifdef XRONOS2 // Different logic for Xronos 2 button pullups

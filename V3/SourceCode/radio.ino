@@ -25,7 +25,7 @@ void radioInit() {
     radio.initialize(currFreq, RF_Node, RF_Network);
     if (RF_Encrypt) radio.encrypt(KEY);
     radio.sleep();
-    sprintf(buff, "%d Mhz. NODE:%d, NET:%d", currFreq==RF69_433MHZ ? 433 : currFreq==RF69_868MHZ ? 868 : 915,RF_Node,RF_Network);
+    sprintf(buff, "RFM69 %d Mhz. NODE:%d, NET:%d", currFreq==RF69_433MHZ ? 433 : currFreq==RF69_868MHZ ? 868 : 915,RF_Node,RF_Network);
   #else
     switch (RF_Frequency) {
       case 0:
@@ -55,7 +55,7 @@ void radioInit() {
     radio.Initialize(RF_Node, currFreq, RF_Network); 
     if (RF_Encrypt) radio.Encrypt(KEY);
     //radio.Sleep();
-    sprintf(buff, "%d Mhz. NODE:%d, NET:%d", currFreq==RF12_433MHZ ? 433 : currFreq==RF12_868MHZ ? 868 : 915,RF_Node,RF_Network);
+    sprintf(buff, "RFM12 %d Mhz. NODE:%d, NET:%d", currFreq==RF12_433MHZ ? 433 : currFreq==RF12_868MHZ ? 868 : 915,RF_Node,RF_Network);
   #endif
   Serial.println (buff);
 }
@@ -80,11 +80,12 @@ void recieveTemp() {
   #if defined (RFM69_CHIP) // Version for RFM69
     if (radio.receiveDone())
       {
-       RFRecieved=true;
-        //Serial.println (now());
+      //Serial.println (now());
        putstring_nl ("Receiving Data...");
        if ( (radio.DATALEN) > 2 && (radio.SENDERID==RF_SensorID) ) { // Make sure recieved data is not empty and came from rigth node
-       last_RF= now();
+        RFRecieved=true;
+        last_RF= now();
+       lastRFEvent=millis();
        memset(RFBuffer, 0, sizeof(RFBuffer)); // Clear Buffer
        for (int i=0; i<radio.DATALEN;i++){ // Fill buffer
               RFBuffer[i]=radio.DATA[i];
@@ -110,8 +111,8 @@ void recieveTemp() {
             */
         delay (10);
         radio.sleep();
-        Serial.println ("card init");
-        card.init(); // Reset SD Card
+        //Serial.println ("card init");
+        //card.init(); // Reset SD Card
         //else
           //Serial.print("BAD-CRC");
       }
@@ -120,9 +121,9 @@ void recieveTemp() {
         {
           if (radio.CRCPass())
           {
-           RFRecieved=true;
            putstring_nl ("Receiving Data...");
            if (radio.GetDataLen() > 2) { // Make sure recieved data is not empty 
+            RFRecieved=true;
             last_RF = now();
             lastRFEvent=millis();
             memset(RFBuffer, 0, sizeof(RFBuffer)); // Clear Buffer
@@ -166,7 +167,7 @@ void parseSensorData() {
           i++;
         }
         Serial.println (F("V"));
-        batt[j+1]='\0'; // Terminate with null
+        batt[j]='\0'; // Terminate with null
         sBatt = atol(batt);// Store sensor battery voltage
       }     
       if (RFBuffer[i]=='T') // Temperature string
@@ -180,10 +181,10 @@ void parseSensorData() {
           i++;
           j++;
         }
-        tempBuff[j+1]='\0'; // Terminate with null
+        tempBuff[j]='\0'; // Terminate with null
+        Serial.print (tempBuff);
+        Serial.print (F("C/"));
         extTemp = atol(tempBuff);// Store External temperature
-        Serial.print (extTemp);
-        Serial.print ("C/");
         tempF=(atof(tempBuff)*9)/5 + 32; // Convert to Farenheight
         Serial.print ( tempF,1); Serial.println ("F");
     
