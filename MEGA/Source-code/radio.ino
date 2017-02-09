@@ -31,9 +31,9 @@ void radioInit() {
 }
 
 // =======================================================================================
-// ---- Recieves Temperature from remote RF12B transmitter ----
+// ---- Recieves Temperature/Humidity from remote sensor ----
 // =======================================================================================
-void recieveTemp() {
+void recieveData() {
   if (!isRadioPresent) return;
   if (isInMenu) return;
   if (!radioOn) {
@@ -41,8 +41,8 @@ void recieveTemp() {
     radioOn=true;
     //putstring_nl ("Radio Wake up!");
   }
-  if (  ((millis()-last_RF) > 900000 ) || last_RF==0) indicatorLED (RED_LED); //Indicate that temp hasn't been recieved in over 15 min
-  //else if ( (millis()-last_RF) > 5000 ) plot (31,0,BLACK); //Hide indicator
+  if (  (((unsigned long)millis()-lastRFEvent) > 900000 ) || lastRFEvent==0) indicatorLED (RED_LED); //Indicate that temp hasn't been recieved in over 15 min
+  //else if ( ((unsigned long)millis()-lastRFEvent) > 5000 ) plot (31,0,BLACK); //Hide indicator
   else  {
     if ((millis()-last_RF) > 3000 ) {
     indicatorLED (BLACK_LED);
@@ -56,14 +56,18 @@ void recieveTemp() {
       if (radio.CRCPass())
       {
         //Serial.println (now());
-        Serial.println  (F("Receiving Temp..."));
-        last_RF=millis();
-        plot (47,0,GREEN); //Plot Indicator dot (radio signal was recieved)
+        Serial.println  (F("Receiving Data..."));
+        
         indicatorLED (BLUE_LED);
         if (radio.GetDataLen() > 2) { // Make sure recieved data is not empty
+          RFRecieved=true;
+          tempUpdated=true;
+          humUpdated = true;
+          last_RF= now();
+          lastRFEvent=millis();
           for (int i=0; i<radio.GetDataLen();i++){ // Fill buffer
             RFBuffer[i]=radio.Data[i];
-            //Serial.println (i);
+            Serial.print (RFBuffer[i]);
           }
           parseSensorData();
         }
@@ -85,6 +89,7 @@ void parseSensorData() {
    int tempInt;
    float tempF;
    char tempBuff[4];
+   char humBuff[4];
    char batt[6];
     // Serial.print ("lengh:"); Serial.println (buffL);
     int i=0;
@@ -94,19 +99,25 @@ void parseSensorData() {
       if (RFBuffer[i]=='B') // Battery voltage string
       {
         i++;// advanced to next letter
+        j=0;
         Serial.print (F("Battery:"));
         while (RFBuffer[i]!=',') {
           Serial.print (RFBuffer[i]);
+          batt[j]=RFBuffer[i];
+          j++;
           i++;
         }
         Serial.println (F("V"));
+        batt[j]='\0'; // Terminate with null
+        sBatt = atol(batt);// Store sensor battery voltage
       }     
       if (RFBuffer[i]=='T') // Temperature string
       {
         i++; // Advance pass "T"
+        j=0;
         Serial.print ("Temperature: ");
         while (RFBuffer[i]!=',') { // Read until find comma separator
-          //Serial.print (RFBuffer[i]);
+          Serial.print (RFBuffer[i]);
           tempBuff[j]=RFBuffer[i];
           i++;
           j++;
@@ -126,13 +137,13 @@ void parseSensorData() {
         j=0;
         Serial.print ("Humidity: ");
         while (RFBuffer[i]!='\0') { // Read until end of string
-          // Serial.print (RFBuffer[i]);
-           tempBuff[j]=RFBuffer[i];
+           humBuff[j]=RFBuffer[i];
+           //Serial.println (humBuff[j]);
           j++;
           i++;
         }
-        tempBuff[j+1]='\0'; // Terminate with null
-        extHum = atol(tempBuff); // Assign external Temp variable Integer number
+        humBuff[j+1]='\0'; // Terminate with null
+        extHum = atol(humBuff); // Assign external Temp variable Integer number
         Serial.print(extHum);
         Serial.println ("%");
       }
