@@ -120,20 +120,25 @@ void mainDate(byte color){
 // ---- Scroll Date and year  ----
 // By: LensDigital
 // ---------------------------------------------------------------------------------------
-void scrollDate(byte y, byte disp)
+void showDate(byte disp)
 {
   if (isInMenu) return;
-  if (!okDate) return;
-  if (pauseScroll) return;
-  okMsg=false;
-   char dateString[20];
-   snprintf(dateString, sizeof(dateString),"%s %2d, %4d",monthStr(month(LOCAL_TZ)),day(LOCAL_TZ),year(LOCAL_TZ)); // Create Month String
-   scrolltextlimit (disp,DISPLAY_SPLIT,0,dateString,1);
-    if (scrollDone[disp]) { // Reset permits
-    okMsg=true;
-    okDate=false;
-    scrollDone[disp]=false;
+  if (screenInUse[disp] && !showingDate) return;
+  if ((unsigned long)millis()-lastDateShow < NewScreenDelay ) return; // Check if just run this to prevent it from hogging screen space
+  if (!showingDate) {
+    //Serial.println ("Debug: Date scroll");
+    showingDate=true;
+    screenInUse[disp]=true;
   }
+  snprintf(topBuff, sizeof(topBuff),"%s %2d, %4d",monthShortStr(month(LOCAL_TZ)),day(LOCAL_TZ),year(LOCAL_TZ)); // Create Month String
+  if (scrollDone[disp]) { // Reset permits
+    showingDate=false;
+    screenInUse[disp]=false;
+    scrollDone[disp]=false;
+    //Serial.println (F("Debug: Done with scorlling date"));
+    lastDateShow=millis();
+  }
+  
 }
 
 // ======================================================

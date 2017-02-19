@@ -543,14 +543,14 @@ void showText(int x, int y, char * myString, int fntsz, byte color){
 
 /*
  ===========================================================================================
- * Scrolls up to point set by x_stop
+ * "Scrolls" up to point set by x_stop. Must be called constantly from main loop for "scroll" effect,
+ * otherwise it just shows static message
  * -- disp can be 0 or 1  and will show scrolling msg on 1st half of the screen or second
  * by LensDigital
  * Based on  functions by Bill Ho
   =========================================================================================*/
 void scrolltextlimit(byte disp, int x_stop,int y,char Str1[ ], int delaytime){
-  if (!scrollPermit) return;
-  if (isInMenu) return;
+  //if (!scrollPermit) return;
   int messageLength = strlen(Str1)+ 1;
      if (!isScrolling[disp]) {
       xpos[disp] = X_MAX;
@@ -558,9 +558,10 @@ void scrolltextlimit(byte disp, int x_stop,int y,char Str1[ ], int delaytime){
     }
     if (xpos[disp] > (-1 * ( 8* messageLength))+x_stop) {
       showTextSplit (x_stop,y, Str1,disp);
-      if ( (digitalRead(SET_BUTTON_PIN) == HIGH) || (digitalRead(MENU_BUTTON_PIN) == HIGH) || (digitalRead(INC_BUTTON_PIN) == HIGH)  ) {cls (); return; } // Interrupt
-      delay(delaytime);// reduce speed of scroll
+      //if ( (digitalRead(SET_BUTTON_PIN) == HIGH) || (digitalRead(MENU_BUTTON_PIN) == HIGH) || (digitalRead(INC_BUTTON_PIN) == HIGH)  ) {cls (); return; } // Interrupt
+      //delay(delaytime);// reduce speed of scroll
       xpos[disp]--;
+      lastScroll[disp]=millis();
     }
     else { 
       isScrolling[disp] =false;
