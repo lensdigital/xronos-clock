@@ -9,7 +9,8 @@
 #include <EEPROM.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
-#include <RFM12B_arssi.h>
+//#include <RFM12B_arssi.h>
+#include <RFM12B.h>
 #include <IRremote.h> // Comment out if IR reciever not present
 #include "myIR_Remote.h" // IR Codes defintion file
 #include <TinyGPS.h> 
@@ -30,7 +31,9 @@ static boolean IR_PRESENT=true; // Set to True if IR reciever is present. Must a
 
 int xpos[2] = {X_MAX,X_MAX}; // Position of X for scrolling msg
 
-char msgbuffer[40];
+char msgbuffer[40]="n/a";
+char topBuff[40];
+char botBuff[40]="Waiting for temperature/humidity update";
 //String SD_lat = "invalid";
 
 
@@ -54,6 +57,8 @@ bool okDate = true;
 bool pauseScroll = false;
 bool setGPSTime = true; // Initially when clock reboots GPS gets set
 char myString[20]; // FOR DEBUGING ONLY
+
+int scrollSpeed[2]={1,10}; // Speed of scrolling for bottom and top displays
 
 long lat, lon; // Latitude, longitude for sattelite
 
@@ -119,6 +124,8 @@ byte RF_Gateway;
 byte RF_Network;
 byte RF_SensorID; 
 boolean RF_Encrypt;
+unsigned int sBatt; // Sensor battery voltage
+bool RFRecieved = false;// Semaphor that keeps track if no IR recieved in certain time 
 
 // ===================================================================================
 // Menus declarations
@@ -136,6 +143,7 @@ boolean RF_Encrypt;
 
 #define RFTimeout 60 // In minutes
 #define GPSTimeout 1500 // In minutes
+#define NewScreenDelay 1000 // in ms
 
 byte menuItem=0; // Counts presses of the Set button 
 byte subMenu[MAX_SUBMENUS]={0,0,0,0,0}; // 0 = setting Time/Date, 1 = System Settings, 2 = RF Options, 3 = UserOptions, 4= Infodisplay Options
@@ -189,6 +197,15 @@ bool LEDEnabled; // Controls Indicator RGB LED
 bool GPSEnabled = false;
 bool rebootPending = false;
 bool GPSAlive = false;
+bool showingTemp = false;
+bool showingHum = false;
+bool showingGPS = false;
+bool showingRF = false;
+bool showingDate = false;
+bool tempUpdated = false;
+bool humUpdated = false;
+
+
 
 char alrmHH[2]; // Alarm Hours
 char alrmMM[2]; // Alarm Minutes
@@ -204,10 +221,18 @@ const int TZAddr[7]={100,148,196,244,292,340,388}; //TimeZone EEPROM Addresses (
 
 unsigned long blinkTime=0; // controls blinking of the dots
 unsigned long last_ms=0; // for setting seconds, etc.
-unsigned long last_RF=millis(); // Keeps track since last RF signal recieved
+long last_RF=0; // Keeps track since last RF signal recieved
 volatile unsigned long lastButtonTime = 0;// last time a button was pushed; used for debouncing
 unsigned long lastRFEvent = 0;//Last time RF data was recieved
 unsigned long lastGPSEvent = 0;//Last time GPS data was recieved
+unsigned long lastTempShow = 0; // Last Time Temperature scrolled
+unsigned long lastHumShow = 0; // Last Time Humidity screen scrolled
+unsigned long lastStatsShow = 0; // Last Time Stats screen scrolled
+unsigned long lastDateShow = 0; // Last Time Stats screen scrolled
+unsigned long lastGPSShow = 0; // Last Time Stats screen scrolled
+unsigned long lastRFStatShow = 0; // Last Time Stats screen scrolled
+unsigned long lastScroll[2]={0,0}; // Keeps times of scrolling function called, controlls speed of scrolling
+
 
 byte clockColor;
 byte clockFont; 
@@ -248,7 +273,7 @@ boolean tempUnit; // Temperature units (True=F or False=C)
 byte infoFreq; // Info Display Freq options
 byte sayOptions;  // Say items options
 byte infoOptions;  // Info Display items options
-byte screenInUse=0; // Makes screens to take turns
+bool screenInUse[2]={false,false}; // screen 0 is top portion of bottom screen, 1 is bottom
 //byte currTZ=0; // Current Time Zone (Default EST)
 
 // EEPROM Location Definitions

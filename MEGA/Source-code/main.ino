@@ -1,107 +1,145 @@
 // =======================================================================================
-// ---- Display Current Internal/external Temperature (Screen 1) ----
-// By: LensDigital
+// ---- Main nonblocking constant scrolling of message on bottom screens ----
+//  scrNum=0 is top portion of bottom screen, 1 is bottom
+// By: LensDigital (updated 1/22/2017)
 // =======================================================================================
-void showTemp(){
+void scrollScreen (char displ, int scrlDelay) {
   if (isInMenu) return;
-  if (screenInUse==0) screenInUse=1; // Claim screen queue
-  if (screenInUse!=1) return; // External Temp is showing
-  if (pauseScroll) return;
-  char myString[35];
-  getTemp(1);
-  float tempF = (tempC * 1.8) + 32.0; // Convert internal to Farenheit
-  float xtempF = (extTemp * 1.8) + 32.0; // Convert external to Farenheit
-  int tempCint = int(tempC +0.5) - tmpOffset;// Convert round off decimal to whole number.
-  int tempFint = int(tempF +0.5) - tmpOffset; // Convert round off decimal to whole number.
-  int xtempFint = int(xtempF +0.5); // Convert round off decimal to whole number.
-  if (extTemp > 100 || extTemp < -50) snprintf(myString,sizeof(myString), "Temp: %dF(%dC)",tempFint,tempCint); // only show internal temp
-  else snprintf(myString,sizeof(myString), "Temp(in/out):%dF(%dC)/%dF(%dC)",tempFint,tempCint,xtempFint,extTemp); // Show both internal/external temp
-  scrolltextlimit (1,DISPLAY_SPLIT,8,myString,1);
-  if (scrollDone[1]) { // Reset permits
-    screenInUse=0; // Release Screen queue
-    scrollDone[1]=false;
-  }
- 
+  if ((unsigned long)millis()-lastScroll[displ] < scrlDelay ) return; // Controlls speed of scrolling
+  if (displ) scrolltextlimit (displ,DISPLAY_SPLIT,8,botBuff,scrlDelay);// Bottom part
+  else scrolltextlimit (displ,DISPLAY_SPLIT,0,topBuff,scrlDelay); // Top part
+  lastScroll[displ]=millis();
 }
 
 // =======================================================================================
 // ---- Display Current Internal/external Temperature (Screen 1) ----
-// By: LensDigital
+// By: LensDigital (updated 1/22/2017)
 // =======================================================================================
-void showTemp_new(){
+void showTemp(int dispNum){
   if (isInMenu) return;
-  if (screenInUse==0) screenInUse=1; // Claim screen queue
-  if (screenInUse!=1) return; // External Temp is showing
-  if (pauseScroll) return;
-  char myString[35];
-  char inTempStringF[3]={'--'};
-  char inTempStringC[3]={'--'};
-  char outTempStringF[3]={'--'};
-  char outTempStringC[3]={'--'};
+  //if (showingHum) return;
+  if (screenInUse[dispNum] && !showingTemp) return;
+  if ((unsigned long)millis()-lastTempShow < NewScreenDelay ) return; // Check if just run this to prevent it from hogging screen space
+  if (!showingTemp) {
+    showingTemp = true;
+    screenInUse[dispNum]=true;
+  }
+  //if (pauseScroll) return;
   getTemp(1);
-  float tempF = (tempC * 1.8) + 32.0; // Convert internal to Farenheit
-  float xtempF = (extTemp * 1.8) + 32.0; // Convert external to Farenheit
-  int tempCint = int(tempC +0.5) - tmpOffset;// Convert round off decimal to whole number.
-  int tempFint = int(tempF +0.5) - tmpOffset; // Convert round off decimal to whole number.
-  int xtempFint = int(xtempF +0.5); // Convert round off decimal to whole number.
-  // Decision block (based on User Options)
-  // Info: We check which option is enabled (i.e. show Internal or external temperature or both)
-  //  Then we check if tempreature is valid (less then 100C but not less thatn -50C. If tempreature is out of range, we only display dashes instead of actual numbers.
-  if ( (infoOptions & IO_InTemp) & (infoOptions & IO_OutTemp) ) { // Display of inside and/or outside temp enabled
-    if (extTemp < 100 || extTemp > -50) {// External Temperature within norm
-      itoa(xtempFint,outTempStringF,10); // Integer to text and fill temp buffer
-      itoa(extTemp,outTempStringC,10); // Integer to text and fill temp buffer
-    }
-    if (tempC < 100 || tempC > -50) {// Internal Temperature within norm?
-      itoa(tempFint,inTempStringF,10); // Integer to text and fill temp buffer
-      itoa(tempCint,inTempStringC,10); // Integer to text and fill temp buffer
-    }
-    snprintf(myString,sizeof(myString), "Temp(in/out):%sF(%sC)/%sF(%sC)",inTempStringF,inTempStringC,outTempStringF,outTempStringC); // Show both internal/external temp
+  if (tempUpdated) {
+    tempUpdated=false;
+    //Serial.println (F("Temperature Updated"));
+    float tempF = (tempC * 1.8) + 32.0; // Convert internal to Farenheit
+    float xtempF = (extTemp * 1.8) + 32.0; // Convert external to Farenheit
+    int tempCint = int(tempC +0.5) - tmpOffset;// Convert round off decimal to whole number.
+    int tempFint = int(tempF +0.5) - tmpOffset; // Convert round off decimal to whole number.
+    int xtempFint = int(xtempF +0.5); // Convert round off decimal to whole number.
+    if (extTemp > 100 || extTemp < -50) snprintf(botBuff,sizeof(botBuff), "In Temp: %dF(%dC)",tempFint,tempCint); // only show internal temp
+    else snprintf(botBuff,sizeof(botBuff), "Temp(in/out):%dF(%dC)/%dF(%dC)",tempFint,tempCint,xtempFint,extTemp); // Show both internal/external temp
   }
-  else if (infoOptions & IO_InTemp) { // Display of insidetemp enabled
-    if (tempC < 100 || tempC > -50) {// Internal Temperature within norm?
-      itoa(tempFint,inTempStringF,10); // Integer to text and fill temp buffer
-      itoa(tempCint,inTempStringC,10); // Integer to text and fill temp buffer
+  if (scrollDone[dispNum]) { // Reset permits
+      screenInUse[dispNum]=false; // Release Screen queue
+      scrollDone[dispNum]=false;
+      lastTempShow=millis();
+      showingTemp=false;
+      tempUpdated=true; // Enable Temp string update for next time
+      //Serial.println ("Debug: Done with Temp scroll");
     }
-    snprintf(myString,sizeof(myString),"In Temp: %sF(%sC)",inTempStringF,inTempStringC); // Show both internal/external temp
-  }
-  else if (infoOptions & IO_OutTemp) { // Display of outside temp enabled
-    if (extTemp < 100 || extTemp > -50) {// External Temperature within norm
-      itoa(xtempFint,outTempStringF,10); // Integer to text and fill temp buffer
-      itoa(extTemp,outTempStringC,10); // Integer to text and fill temp buffer
-    }
-    snprintf(myString,sizeof(myString),"Out Temp: %sF(%sC)",outTempStringF,outTempStringC); // Show both internal/external temp
-  }
-  scrolltextlimit (1,DISPLAY_SPLIT,8,myString,1);
-  if (scrollDone[1]) { // Reset permits
-    screenInUse=0; // Release Screen queue
-    scrollDone[1]=false;
-  }
- 
 }
+
+
 
 // =======================================================================================
 // ---- Display Current External Humidity  ----
 // By: LensDigital
 // =======================================================================================
-void showHumidityExt(){
-  if (isInMenu) return;
+void showHumidityExt(int dispNum){
+  if (!RFRecieved) return;
   if (!isRadioPresent) return;
-  if (screenInUse==0) screenInUse=3; // Claim screen queue
-  if (screenInUse!=3) return; // Screen queue is in use 
-  if (pauseScroll) return;
-  char myString[24];
-  if (infoOptions & IO_OutHum) {
-    if (extHum > 100 || extHum < 1) scrolltextlimit (1,DISPLAY_SPLIT,8,"External Humidity Sensor Error",1); // Humidity sensor is not working
-    else {
-      snprintf(myString,sizeof(myString), "Humidity outside is %2d%%",extHum); // Scroll Outside Humidity
-      scrolltextlimit (1,DISPLAY_SPLIT,8,myString,1);
-    }
-    if (scrollDone[1]) { // Reset permits
-     screenInUse=0; // Release Screen queue
-      scrollDone[1]=false;
+  if (isInMenu) return;
+  if (screenInUse[dispNum] && !showingHum) return;
+  if ((unsigned long)millis()-lastHumShow < NewScreenDelay ) return; // Check if just run this to prevent it from hogging screen space
+  if (!showingHum) {
+    //Serial.println ("Debug: Humidity scroll");
+    //snprintf(botBuff,sizeof(botBuff), "DEBUG HUMIDITY",extHum); // Scroll Outside Humidity
+    showingHum=true;
+    screenInUse[dispNum]=true;
+  }
+  //if (pauseScroll) return;
+  //if (humUpdated) {
+  if (tempUpdated) {
+    humUpdated =false;
+    if (infoOptions & IO_OutHum) { // Option enabled
+      if (extHum > 100 || extHum < 1) {
+        Serial.println ("Humidity data error");
+        snprintf(botBuff,sizeof(botBuff), "Ext Sensor Error"); // Scroll Outside Humidity
+      }
+      else snprintf(botBuff,sizeof(botBuff), "Humidity %d%%",extHum); // Scroll Outside Humidity
+      
     }
   }
+  if (scrollDone[dispNum]) { // Reset permits
+       screenInUse[dispNum]=false; // Release Screen queue
+        scrollDone[dispNum]=false;
+        lastHumShow=millis();
+        showingHum = false;
+        humUpdated=true; // Enable Hum string update for next time
+        //Serial.println ("Debug: Done with Humidity scroll");
+      }
+}
+// =======================================================================================
+// ---- Display GPS Stats  ----
+// By: LensDigital
+// =======================================================================================
+void scrollGPSStat (int dispNum) {
+  if (!GPSEnabled) return;
+  if (isInMenu) return;
+  if (screenInUse[dispNum] && !showingGPS) return;
+  if ((unsigned long)millis()-lastGPSShow < NewScreenDelay ) return; // Check if just run this to prevent it from hogging screen space
+  if (!showingGPS) {
+    //Serial.println (F("Debug: GPS Stats scroll"));
+    showingGPS=true;
+    screenInUse[dispNum]=true;
+  }
+  snprintf(topBuff,sizeof(topBuff), "GPS time updated:%s",msgbuffer);
+  if (scrollDone[dispNum]) { // Reset permits
+       screenInUse[dispNum]=false; // Release Screen queue
+       scrollDone[dispNum]=false;
+       lastGPSShow=millis();
+       showingGPS = false;
+       //Serial.println ("Debug: Done with GPS scroll");
+      }
+}
+// =======================================================================================
+// ---- Display Remote Sensor Stats  ----
+// By: LensDigital
+// =======================================================================================
+void scrollSnsStat (int dispNum) {
+  if (!RFRecieved) return; // We never got transmission
+  if (!isRadioPresent) return;
+  if (isInMenu) return;
+  if (screenInUse[dispNum] && !showingRF) return;
+  if ((unsigned long)millis()-lastRFStatShow < NewScreenDelay ) return; // Check if just run this to prevent it from hogging screen space
+  if (!showingRF) {
+    //Serial.println (F("Debug: RF Stats scroll"));
+    showingRF=true;
+    screenInUse[dispNum]=true;
+  }
+   // Split batter 3 digit voltage into separate digits
+    byte first=sBatt/100; // Thousand
+    byte scnd =(sBatt%100)/10;
+    byte third=sBatt%10;
+    if ((unsigned long)millis()-lastRFEvent < RFTimeout*60000 ) 
+      snprintf(topBuff,sizeof(topBuff), "Sns data rcv at %02d:%02d,BAT:%d.%d%dV",hour(myTZ.toLocal(last_RF, &tcr)),minute(last_RF),first,scnd,third );
+    else 
+      snprintf(topBuff,sizeof(topBuff), "Sns data rcv %02d/%02d at %02d:%02d,BAT:%d.%d%dV",month(myTZ.toLocal(last_RF, &tcr)),day(myTZ.toLocal(last_RF, &tcr)), hour(myTZ.toLocal(last_RF, &tcr)),minute(last_RF),first,scnd,third );
+   if (scrollDone[dispNum]) { // Reset permits
+       screenInUse[dispNum]=false; // Release Screen queue
+       scrollDone[dispNum]=false;
+       lastRFStatShow=millis();
+       showingRF = false;
+       //Serial.println ("Debug: Done with RF scroll");
+      }
 }
 
 // =======================================================================================
@@ -116,9 +154,10 @@ void getTemp(byte freq)
     sensors.begin();
     sensors.requestTemperatures(); // Send the command to get temperatures
     tempC = sensors.getTempC(insideThermometer);
-    delay (500);
+    delay (100);
     pauseScroll=false;
     indicatorLED (BLACK_LED);
+    tempUpdated=true;
   }
 }
 
@@ -801,7 +840,7 @@ void getGPSTIme() {
 
         if (age < 500) {
           // set the Time to the latest GPS reading
-          if (Year<2016) return; // Failsafe for bad data
+          if (Year<2017) return; // Failsafe for bad data
           setTime(Hour, Minute, Second, Day, Month, Year);
           //adjustTime(offset * SECS_PER_HOUR);
            RTC.set(now()); // Writes time change to RTC chip    
@@ -810,7 +849,7 @@ void getGPSTIme() {
           timestamp[0]=hour(LOCAL_TZ);
           timestamp[1]=minute();
           timestamp[2]=second();
-          if (infoOptions & IO_GPSStat) snprintf(msgbuffer,sizeof(msgbuffer),"GPS time updated:%02d:%02d:%02d",timestamp[0],minute(),second());
+          if (infoOptions & IO_GPSStat) snprintf(msgbuffer,sizeof(msgbuffer),"%02d:%02d:%02d",timestamp[0],minute(),second());
           Serial.println (msgbuffer);
           if (i=1) setGPSTime=false; // Reset GPS var
           lastGPSEvent=millis();
@@ -866,7 +905,7 @@ void indicatorStatus () {
   if (lastGPSEvent==0) indColorGPS=BLACK;
   else if ((unsigned long)millis()-lastGPSEvent < GPSTimeout*60000 ) indColorGPS=GREEN;
   else indColorGPS=BLACK;
-  plot (0,15,indColorGPS);
+  plot (47,15,indColorGPS);
 }
 
 // ===============================================================================================

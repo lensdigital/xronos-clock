@@ -6,10 +6,11 @@ void radioInit() {
   if (!isRadioPresent) return;
   int currFreq;
   char buff[50];
-  if ( radio.isPresent( RFM_CS_PIN, RFM_IRQ_PIN) )
+  /*if ( radio.isPresent( RFM_CS_PIN, RFM_IRQ_PIN) )
     Serial.println(F("RFM12B Detected OK!"));
   else
     Serial.println(F("RFM12B Detection FAIL! (is chip present?)"));
+    */
   switch (RF_Frequency) {
     case 0:
       currFreq=RF12_915MHZ;
@@ -59,6 +60,7 @@ void recieveData() {
         Serial.println  (F("Receiving Data..."));
         
         indicatorLED (BLUE_LED);
+        //if ((radio.GetDataLen() > 2) && (radio.GetSender()==RF_SensorID)) { // Make sure recieved data is not empty
         if (radio.GetDataLen() > 2) { // Make sure recieved data is not empty
           RFRecieved=true;
           tempUpdated=true;
@@ -67,8 +69,8 @@ void recieveData() {
           lastRFEvent=millis();
           for (int i=0; i<radio.GetDataLen();i++){ // Fill buffer
             RFBuffer[i]=radio.Data[i];
-            Serial.print (RFBuffer[i]);
           }
+          Serial.println (RFBuffer);
           parseSensorData();
         }
         if (radio.ACKRequested())
@@ -89,7 +91,7 @@ void parseSensorData() {
    int tempInt;
    float tempF;
    char tempBuff[4];
-   char humBuff[4];
+   char humBuff[5];
    char batt[6];
     // Serial.print ("lengh:"); Serial.println (buffL);
     int i=0;
@@ -115,14 +117,16 @@ void parseSensorData() {
       {
         i++; // Advance pass "T"
         j=0;
-        Serial.print ("Temperature: ");
-        while (RFBuffer[i]!=',') { // Read until find comma separator
-          Serial.print (RFBuffer[i]);
+       while (RFBuffer[i]!=',') { // Read until find comma separator
+          //Serial.print (RFBuffer[i]);
           tempBuff[j]=RFBuffer[i];
           i++;
           j++;
         }
-        tempBuff[j+1]='\0'; // Terminate with null
+        //Serial.print ("j:"); Serial.println (j);
+        tempBuff[j]='\0'; // Terminate with null
+        //Serial.print ("Temp before atol:"); Serial.println (tempBuff);
+        Serial.print ("Temperature: ");
         extTemp = atol(tempBuff);// Store External temperature
         Serial.print (extTemp);
         Serial.print ("C/");
@@ -142,13 +146,13 @@ void parseSensorData() {
           j++;
           i++;
         }
-        humBuff[j+1]='\0'; // Terminate with null
+        humBuff[j]='\0'; // Terminate with null
         extHum = atol(humBuff); // Assign external Temp variable Integer number
         Serial.print(extHum);
         Serial.println ("%");
       }
-     if (RFBuffer[i]!='\0') i++; // Failsafe so we don't go over end of string
-  
+     //if (RFBuffer[i]!='\0') i++; // Failsafe so we don't go over end of string
+     i++;
     // ------------------------------------------------------
     }
 }

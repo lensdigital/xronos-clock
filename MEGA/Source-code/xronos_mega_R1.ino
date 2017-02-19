@@ -19,10 +19,11 @@
 * V06 (2016-08-17): Fix single digit humidity not showing correctly.
 * V07 (2017-01-22): Major Rewrite to all message scrolling function (non blocking, independant scrolling speeds, faster execution, etc.)
 * V08 (2017-01-22): Radio stats
-* V09 (2017-02-08): Finally fixed temperature bug (in parseSensorData)
+* V09 (2017-02-18): Finally fixed temperature bug (in parseSensorData)
+* V10 (2017-02-18): Trying to fix again temperature bug. Suspected memory leak. humUpdate variable looses it's value for no reason :(. Added check for SenderID
  =============================================================================================
 */
-#define firmware_ver 109 // Current Firmware version
+#define firmware_ver 110 // Current Firmware version
 
 #include "xronos_mega.h" // Contains most  variables and definitions
 
@@ -84,6 +85,7 @@ void loop (){
   recieveData();
   indicatorStatus();
   
+    
   
 }
   
