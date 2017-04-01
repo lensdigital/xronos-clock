@@ -1,6 +1,8 @@
 /* Xronos Clock V3 definitions and vars */
 
-//#define RFM69_CHIP // Comment out for RFM12b
+#if (!defined XRONOS2) //Xronos 2 only uses RFM12b.
+  #define RFM69_CHIP // Comment out for RFM12b
+#endif
 
 #include <Arduino.h>
 #include <avr/pgmspace.h>                // Enable data to be stored in Flash Mem as well as SRAM              
@@ -135,7 +137,7 @@ const byte SUN =     B00000001; // 1
 #define NODEID      1
 #define NETWORKID   1
 #define GATEWAYID   9
-#define KEY         "This is Key" //has to be same 16 characters/bytes on all nodes, not more not less!
+#define KEY         "aYBeAjCq7ykHpUE6" //has to be same 16 characters/bytes on all nodes, not more not less!
 //#define LED         9
 #define ACK_TIME    30  // # of ms to wait for an ack
 // Need an instance of the Radio Module

@@ -19,11 +19,12 @@
 * V06: Show date in Radio Stats if it hasn't updated in long time
 * V07: Si7021 sensor. SoundZ library with Serial Flash
 * V08: Fix External temperature display. Fix sensor data showing when data not recieved. Fix battery and humidity parsking (extra digit at the end)
+* V09: Fix Ext sensor data parsing (to fix temperature not reporting correctly sometimes). Fix definition for Xronos2 (RFM96 only for V3)
 */
-#define XRONOS2 // Comment out for Xronos 3
+//#define XRONOS2 // Comment out for Xronos 3
 
 #include "xronos3.h"
-#define firmware_ver 308 // Current Firmware version
+#define firmware_ver 309 // Current Firmware version
 
 void setup ()  
 {

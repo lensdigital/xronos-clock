@@ -150,6 +150,7 @@ void parseSensorData() {
    int tempInt;
    float tempF;
    char tempBuff[4];
+   char humBuff[5];
    char batt[6];
     // Serial.print ("lengh:"); Serial.println (buffL);
     int i=0;
@@ -159,6 +160,7 @@ void parseSensorData() {
       if (RFBuffer[i]=='B') // Battery voltage string
       {
         i++;// advanced to next letter
+        j=0;
         Serial.print (F("Battery:"));
         while (RFBuffer[i]!=',') {
           Serial.print (RFBuffer[i]);
@@ -197,15 +199,16 @@ void parseSensorData() {
         Serial.print ("Humidity: ");
         while (RFBuffer[i]!='\0') { // Read until end of string
            Serial.print (RFBuffer[i]);
-           tempBuff[j]=RFBuffer[i];
+           humBuff[j]=RFBuffer[i];
           j++;
           i++;
         }
         Serial.println("");
-        tempBuff[j]='\0'; // Terminate with null
-        extHum = atol(tempBuff); // Assign external Temp variable Integer number
+        humBuff[j]='\0'; // Terminate with null
+        extHum = atol(humBuff); // Assign external Temp variable Integer number
       }
-     if (RFBuffer[i]!='\0') i++; // Failsafe so we don't go over end of string
+     //if (RFBuffer[i]!='\0') i++; // Failsafe so we don't go over end of string
+     i++;
   
     // ------------------------------------------------------
     }
